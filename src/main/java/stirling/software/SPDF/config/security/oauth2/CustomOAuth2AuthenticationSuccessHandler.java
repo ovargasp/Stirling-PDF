@@ -14,6 +14,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import stirling.software.SPDF.config.security.LoginAttemptService;
 import stirling.software.SPDF.config.security.UserService;
 import stirling.software.SPDF.model.ApplicationProperties;
@@ -78,18 +79,21 @@ public class CustomOAuth2AuthenticationSuccessHandler
             if (userService.isUserDisabled(username)) {
                 getRedirectStrategy()
                         .sendRedirect(request, response, "/logout?userIsDisabled=true");
+                return;
             }
             if (userService.usernameExistsIgnoreCase(username)
                     && userService.hasPassword(username)
                     && !userService.isAuthenticationTypeByUsername(username, AuthenticationType.SSO)
                     && oAuth.getAutoCreateUser()) {
                 response.sendRedirect(contextPath + "/logout?oAuth2AuthenticationErrorWeb=true");
+                return;
             }
 
             try {
                 if (oAuth.getBlockRegistration()
                         && !userService.usernameExistsIgnoreCase(username)) {
                     response.sendRedirect(contextPath + "/logout?oAuth2AdminBlockedUser=true");
+                    return;
                 }
                 if (principal instanceof OAuth2User) {
                     userService.processSSOPostLogin(username, oAuth.getAutoCreateUser());
